@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AlbumRanker 🎵</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #232526 0%, #414345 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e0e0e0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: #232526;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #bdbdbd;
+            font-size: 1.1em;
+        }
+
+        /* Search Page */
+        .search-page {
+            display: none;
+        }
+
+        .search-page.active {
+            display: block;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        #albumSearch {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        #albumSearch:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3a3f58 0%, #667eea 100%);
+            color: #e0e0e0;
+            border: 2px solid #667eea;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.7);
+            background: linear-gradient(135deg, #232526 0%, #667eea 100%);
+            color: #fff;
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .search-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .album-card {
+            background: #2c2f33;
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .album-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .album-card.selected {
+            background: #667eea;
+            color: #fff;
+            border-color: #667eea;
+        }
+
+        .album-art {
+            width: 100%;
+            height: 160px;
+            background: #232526;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            object-fit: cover;
+        }
+
+        .album-info {
+            text-align: left;
+        }
+
+        .album-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.3;
+            color: #e0e0e0;
+        }
+
+        .album-artist {
+            font-size: 0.9em;
+            color: #fff;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+
+        .album-year {
+            font-size: 0.85em;
+            opacity: 0.8;
+            color: #fff;
+        }
+
+        /* Ranking Page */
+        .ranking-page {
+            display: none;
+        }
+
+        .ranking-page.active {
+            display: block;
+        }
+
+        .ranking-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .album-display {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .album-display img {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+
+        .album-display-info h3 {
+            font-size: 1.3em;
+            color: #e0e0e0;
+            margin-bottom: 4px;
+        }
+
+        .album-display-info p {
+            color: #bdbdbd;
+        }
+
+        .progress-bar {
+            background: #e0e0e0;
+            height: 8px;
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        @media (max-width: 768px) {
+            .comparison-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .song-card {
+            background: #2c2f33;
+            border: 3px solid #444;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .song-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .song-card.selected {
+            background: #667eea;
+            color: #fff;
+            border-color: #667eea;
+        }
+
+        .song-number {
+            font-size: 0.9em;
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+
+        .song-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+
+        .song-artist {
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 16px;
+        }
+
+        .song-duration {
+            font-size: 0.85em;
+            opacity: 0.6;
+            margin-bottom: 16px;
+        }
+
+        .audio-player {
+            margin-bottom: 16px;
+            width: 100%;
+        }
+
+        audio {
+            width: 100%;
+        }
+
+        .no-preview {
+            color: #999;
+            font-size: 0.9em;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .song-card.selected .no-preview {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-select {
+            background: #232526;
+            color: #e0e0e0;
+            border: 2px solid #667eea;
+            width: 100%;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .song-card.selected .btn-select {
+            background: #667eea;
+            color: #fff;
+        }
+
+        .btn-select:hover {
+            background: #667eea;
+            color: #fff;
+        }
+
+        /* Results Page */
+        .results-page {
+            display: none;
+        }
+
+        .results-page.active {
+            display: block;
+        }
+
+        .results-list {
+            list-style: none;
+        }
+
+        .result-item {
+            background: #2c2f33;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .result-rank {
+            font-size: 1.5em;
+            font-weight: 600;
+            color: #667eea;
+            min-width: 40px;
+        }
+
+        .result-info {
+            flex: 1;
+        }
+
+        .result-title {
+            font-weight: 600;
+            font-size: 1.05em;
+            color: #e0e0e0;
+        }
+
+        .result-artist {
+            color: #bdbdbd;
+            font-size: 0.9em;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-secondary {
+            background: #444;
+            color: #e0e0e0;
+            border: 2px solid #888;
+        }
+
+        .btn-secondary:hover {
+            background: #232526;
+            color: #81a1c1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #e0e0e0;
+        }
+
+        .spinner {
+            border: 4px solid #444;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #2c2f33;
+            color: #ff5252;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .success {
+            background: #232526;
+            color: #81c784;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AlbumRanker</h1>
+            <p class="subtitle">Rank your favorite albums' songs</p>
+        </div>
+
+        <!-- Search Page -->
+        <div class="search-page active" id="searchPage">
+            <div class="search-box">
+                <input 
+                    type="text" 
+                    id="albumSearch" 
+                    placeholder="Search for an album or artist..."
+                    autocomplete="off"
+                >
+                <button class="btn btn-primary" id="searchBtn">Search</button>
+            </div>
+            <div id="searchError"></div>
+            <div id="searchResults" class="search-results"></div>
+            <div style="text-align: center; margin-top: 30px;">
+                <button 
+                    class="btn btn-primary" 
+                    id="startRankingBtn"
+                    disabled
+                >Start Ranking</button>
+            </div>
+        </div>
+
+        <!-- Ranking Page -->
+        <div class="ranking-page" id="rankingPage">
+            <div class="ranking-header">
+                <div class="album-display">
+                    <img id="rankingAlbumArt" alt="Album Art">
+                    <div class="album-display-info">
+                        <h3 id="rankingAlbumName"></h3>
+                        <p id="rankingAlbumArtist"></p>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText"></p>
+            </div>
+
+            <div class="comparison-container" id="comparisonContainer"></div>
+
+            <div style="text-align: center;">
+                <button class="btn btn-secondary" id="backBtn">← Back to Search</button>
+            </div>
+        </div>
+
+        <!-- Results Page -->
+        <div class="results-page" id="resultsPage">
+            <h2 style="text-align: center; margin-bottom: 30px;">Your Ranking 🏆</h2>
+            <ul class="results-list" id="resultsList"></ul>
+            <div class="button-group">
+                <button class="btn btn-primary" id="rankAgainBtn">Rank Again</button>
+                <button class="btn btn-secondary" id="newSearchBtn">Search New Album</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>
