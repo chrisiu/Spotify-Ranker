@@ -28,6 +28,3 @@ Open your preferred browser and go to:
 http://127.0.0.1:8000/
 
 
-____________
-
-Test app without running 
